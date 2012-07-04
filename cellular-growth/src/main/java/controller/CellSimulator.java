@@ -85,6 +85,7 @@ public class CellSimulator extends SwingWorker<int[][], int[][]> {
 		
 		mainWindow.setState(lastState);
 		mainWindow.addStateCount(stateChunk.size());
+		// mainWindow.renderAndSaveStates(stateChunk, stateSizeX, stateSizeY);
 		statePanel.renderState(lastState, stateSizeX, stateSizeY);
 	}
 }

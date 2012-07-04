@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -7,10 +8,15 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -29,6 +35,7 @@ import model.enumerators.RuleAction;
 import observer.action.ExitAction;
 import observer.action.RandomAction;
 import observer.action.ResetAction;
+import observer.action.SaveAction;
 import observer.action.StartAction;
 import observer.action.StopAction;
 
@@ -132,8 +139,11 @@ public class MainWindow extends JFrame {
 		
 		JButton startButton = new JButton(new StartAction(this));
 		JButton stopButton = new JButton(new StopAction(this));
+		
 		JButton resetButton = new JButton(new ResetAction(this));
 		JButton randomButton = new JButton(new RandomAction(this));
+		
+		JButton saveButton = new JButton(new SaveAction(this));
 		
 		// Set constraints
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -141,7 +151,7 @@ public class MainWindow extends JFrame {
 		// Adding components to the contentPane, which is then added to the frame
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = 2;
 		gbc.weightx = 1;
 		gbc.weighty = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -166,11 +176,17 @@ public class MainWindow extends JFrame {
 		gbc.gridx = 1;
 		contentPane.add(stopButton, gbc);
 		
-		gbc.gridx = 2;
+		gbc.gridx = 0;
+		gbc.gridy = 3;
 		contentPane.add(resetButton, gbc);
 		
-		gbc.gridx = 3;
+		gbc.gridx = 1;
 		contentPane.add(randomButton, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		contentPane.add(saveButton, gbc);
 		
 		add(contentPane);
 		
@@ -223,6 +239,40 @@ public class MainWindow extends JFrame {
 		
 		if (stateCountLabel != null) {
 			stateCountLabel.setText("States: " + stateCount);
+		}
+	}
+	
+	public void saveImage(File file) {
+		BufferedImage image = statePanel.stateImage;
+		saveImage(image, file);
+	}
+	
+	public void saveImage(BufferedImage image, File file) {
+		try {
+			ImageIO.write(image, "png", file);
+			log.info("Image saved");
+		} catch (IOException e) {
+			throw new RuntimeException("Image could not be saved!");
+		}
+	}
+	
+	public void renderAndSaveStates(List<int[][]> stateChunk, int stateSizeX, int stateSizeY) {
+		for (int[][] state : stateChunk) {
+			stateCount++;
+			log.info("stateChunk size: {}", stateCount);
+			BufferedImage stateImage = new BufferedImage(stateSizeX, stateSizeY, BufferedImage.TYPE_INT_RGB);
+			for (int x = 0; x < stateSizeX; x++) {
+				for (int y = 0; y < stateSizeY; y++) {
+					int color;
+					if (state[x][y] == 0) {
+						color = Color.WHITE.getRGB();
+					} else {
+						color = Color.BLACK.getRGB();
+					}
+					stateImage.setRGB(x, y, color);
+				}
+			}
+			saveImage(stateImage, new File("./images/All patterns/Pattern " + stateCount + ".png"));
 		}
 	}
 }

@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class StatePanel extends JPanel {
-	private BufferedImage	stateImage;
+	public BufferedImage	stateImage;
 	private BufferedImage	imageBuffer;
 	private Color[]			color;
 	private int				scale;

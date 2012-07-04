@@ -9,13 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import view.MainWindow;
-import controller.CellSimulator;
 
 @SuppressWarnings("serial")
 public class StartAction extends AbstractAction {
 	private static final Logger	log	= LoggerFactory.getLogger(StartAction.class);
 	
-	CellSimulator				cellSimulator;
 	MainWindow					mainWindow;
 	
 	public StartAction(MainWindow mainWindow) {
