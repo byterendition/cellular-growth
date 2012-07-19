@@ -26,7 +26,13 @@ public class CellSimulator extends SwingWorker<int[][], int[][]> {
 	private Set<Rule>			ruleSet;
 	private int					ruleSize;
 	
+	private int					maxStep;
+	
 	public CellSimulator(MainWindow mainWindow, StatePanel statePanel, int[][] startState, int stateSizeX, int stateSizeY, Set<Rule> ruleSet, int ruleSize) {
+		this(mainWindow, statePanel, startState, stateSizeX, stateSizeY, ruleSet, ruleSize, 0);
+	}
+	
+	public CellSimulator(MainWindow mainWindow, StatePanel statePanel, int[][] startState, int stateSizeX, int stateSizeY, Set<Rule> ruleSet, int ruleSize, int maxStep) {
 		this.mainWindow = mainWindow;
 		this.statePanel = statePanel;
 		
@@ -36,16 +42,21 @@ public class CellSimulator extends SwingWorker<int[][], int[][]> {
 		
 		this.ruleSet = ruleSet;
 		this.ruleSize = ruleSize;
+		
+		this.maxStep = maxStep;
 	}
 	
 	@Override
 	protected int[][] doInBackground() throws Exception {
-		boolean cancelled = false;
-		while (!cancelled) {
-			doStep(currentState, ruleSet);
-			publish(currentState);
-			if (isCancelled()) {
-				cancelled = true;
+		if (maxStep < 1) {
+			while (!isCancelled()) {
+				doStep(currentState, ruleSet);
+				publish(currentState);
+			}
+		} else {
+			for (int i = 0; i < maxStep && !isCancelled(); i++) {
+				doStep(currentState, ruleSet);
+				publish(currentState);
 			}
 		}
 		return currentState;
@@ -87,5 +98,10 @@ public class CellSimulator extends SwingWorker<int[][], int[][]> {
 		mainWindow.addStateCount(stateChunk.size());
 		// mainWindow.renderAndSaveStates(stateChunk, stateSizeX, stateSizeY);
 		statePanel.renderState(lastState, stateSizeX, stateSizeY);
+	}
+	
+	@Override
+	protected void done() {
+		mainWindow.enableInterface(true);
 	}
 }

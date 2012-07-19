@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -58,13 +60,16 @@ public class MainWindow extends JFrame {
 	
 	private final int			INITIAL_STATE_SIZE_X	= 41, INITIAL_STATE_SIZE_Y = 41;
 	private final int			INITIAL_PIXEL_SIZE		= 8, INITIAL_RULE_SIZE = 2;
+	private final int			INITIAL_STEP_SIZE		= 1;
 	
 	private int					stateSizeX				= INITIAL_STATE_SIZE_X;
 	private int					stateSizeY				= INITIAL_STATE_SIZE_Y;
 	private int					pixelSize				= INITIAL_PIXEL_SIZE;
 	private int					ruleSize				= INITIAL_RULE_SIZE;
+	private int					stepSize				= INITIAL_STEP_SIZE;
 	
-	private JSpinner			stateSizeXSpinner, stateSizeYSpinner, pixelSizeSpinner, ruleSizeSpinner;
+	private JButton				startButton;
+	private JSpinner			stateSizeXSpinner, stateSizeYSpinner, pixelSizeSpinner, ruleSizeSpinner, stepSizeSpinner;
 	private AbstractAction		startAction, stopAction, resetAction, randomAction, saveAction;
 	
 	private Set<Rule>			ruleSet;
@@ -92,6 +97,9 @@ public class MainWindow extends JFrame {
 		stateSizeYSpinner.setEnabled(enabled);
 		pixelSizeSpinner.setEnabled(enabled);
 		ruleSizeSpinner.setEnabled(enabled);
+		stepSizeSpinner.setEnabled(enabled);
+		
+		startButton.requestFocusInWindow();
 	}
 	
 	public void updateGUI() {
@@ -209,9 +217,16 @@ public class MainWindow extends JFrame {
 				initRuleSet();
 			}
 		});
+		stepSizeSpinner = new JSpinner(new SpinnerNumberModel(stepSize, 0, Integer.MAX_VALUE, 1));
+		stepSizeSpinner.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				stepSize = (Integer) stepSizeSpinner.getValue();
+			}
+		});
 		
 		startAction = new StartAction(this);
-		JButton startButton = new JButton(startAction);
+		startButton = new JButton(startAction);
 		stopAction = new StopAction(this);
 		JButton stopButton = new JButton(stopAction);
 		
@@ -229,56 +244,82 @@ public class MainWindow extends JFrame {
 		GridBagConstraints gbc = new GridBagConstraints();
 		
 		// Adding components to the contentPane, which is then added to the frame
-		gbc.gridx = 0;
-		gbc.gridy = 0;
 		gbc.gridwidth = 2;
 		gbc.weightx = 1;
 		gbc.weighty = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.insets = new Insets(12, 12, 0, 12);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 0;
 		contentPane.add(stateCountLabel, gbc);
 		
-		gbc.gridy = 1;
 		gbc.weighty = 1;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(12, 12, 12, 12);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 1;
 		contentPane.add(statePanel, gbc);
 		
-		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		gbc.weighty = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.insets = new Insets(0, 12, 12, 12);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		contentPane.add(new JLabel("Width:"), gbc);
+		
+		gbc.gridx = 1;
 		contentPane.add(stateSizeXSpinner, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		contentPane.add(new JLabel("Height:"), gbc);
 		
 		gbc.gridx = 1;
 		contentPane.add(stateSizeYSpinner, gbc);
 		
 		gbc.gridx = 0;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
+		contentPane.add(new JLabel("Pixel size:"), gbc);
+		
+		gbc.gridx = 1;
 		contentPane.add(pixelSizeSpinner, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		contentPane.add(new JLabel("Rule size:"), gbc);
 		
 		gbc.gridx = 1;
 		contentPane.add(ruleSizeSpinner, gbc);
 		
 		gbc.gridx = 0;
-		gbc.gridy = 4;
+		gbc.gridy = 6;
+		contentPane.add(new JLabel("Step size:"), gbc);
+		
+		gbc.gridx = 1;
+		contentPane.add(stepSizeSpinner, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 7;
 		contentPane.add(startButton, gbc);
 		
 		gbc.gridx = 1;
 		contentPane.add(stopButton, gbc);
 		
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 8;
 		contentPane.add(resetButton, gbc);
 		
 		gbc.gridx = 1;
 		contentPane.add(randomButton, gbc);
 		
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = 9;
 		gbc.gridwidth = 2;
 		contentPane.add(saveButton, gbc);
 		
@@ -288,6 +329,14 @@ public class MainWindow extends JFrame {
 		setMinimumSize(new Dimension(240, 240));
 		
 		pack();
+		
+		// Ensure the start button always gets the first focus.
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent ce) {
+				startButton.requestFocusInWindow();
+			}
+		});
 	}
 	
 	private JMenuBar buildMenuBar() {
@@ -304,7 +353,8 @@ public class MainWindow extends JFrame {
 	}
 	
 	private class MainWindowListener extends WindowAdapter {
-		public MainWindowListener() {}
+		public MainWindowListener() {
+		}
 		
 		@Override
 		public void windowClosing(WindowEvent e) {
@@ -315,7 +365,7 @@ public class MainWindow extends JFrame {
 	
 	public void startSimulator() {
 		if (cellSimulator == null || cellSimulator.getState() != StateValue.STARTED) {
-			cellSimulator = new CellSimulator(this, statePanel, state, stateSizeX, stateSizeY, ruleSet, ruleSize);
+			cellSimulator = new CellSimulator(this, statePanel, state, stateSizeX, stateSizeY, ruleSet, ruleSize, stepSize);
 			cellSimulator.execute();
 		}
 	}
